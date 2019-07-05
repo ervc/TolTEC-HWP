@@ -212,7 +212,7 @@ def hwp_analysis(file_list):
     picowatt_high = picowattCalc(245,310,frequency,T_avg,5)
     
     #write outputs to csv file
-    with open('output.csv', 'w', newline='') as csvfile:
+    with open('output.csv', 'w') as csvfile:
         write_file = csv.writer(csvfile, delimiter=',')
         row=0
         for i in range(len(differential)+1):
