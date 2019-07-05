@@ -240,10 +240,6 @@ def hwp_analysis(file_list):
     ax1.text(220,10, '220 GHz\nBand', ha='center', size='xx-large')
     ax1.text(280,10, '300 GHz\nBand', ha='center', size='xx-large')
     
-    #plots lines at +/- 1K
-    plt.axhline(1, c='k', linestyle='dashed')
-    plt.axhline(-1, c='k', linestyle='dashed')
-    
     #this section marks off each band blue for the low frequency, yellow for mid, green for high
     xc = [128,170,195,245,246,310]
     for i in range(len(xc)):
