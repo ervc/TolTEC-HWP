@@ -7,12 +7,12 @@ from math import pi
 #if rflag == 0, then all reflectivity values are considered to be zero, same for aflag
 #if rflag == 1, then reflectivites are taken from optical element csv, same for aflag
 #aflag has the option of aflag == -1, this sets only the hwp absorptivity to zero
-def before_hwp(Tin, file,rflag,aflag):
+def before_hwp(Tin,file,rflag,aflag):
     #make a new empty list for output temperatures
     Tout=[]
     
     #note this file assumes columns are in order
-    #Frequency, Absorption, Reflection, T_reflected, T_absorbed
+    #Frequency, Absorptivity, Reflectivity, T_reflected, T_absorbed
     with open(file) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
@@ -38,25 +38,27 @@ def before_hwp(Tin, file,rflag,aflag):
                 
                 line_count+=1
     return(Tout)
+##############################
+####    end before_hwp()  ####
+##############################
 
-def during_hwp(Tin, file,rflag,aflag):
+def during_hwp(Tin,file,rflag,aflag):
     Tout_perp=[]
     Tout_para=[]
     
     '''Right now this has been designed with the same file for which I digitized HWP absorptions
     so the first column is Frequency, then 8 columns of data, then columns 9 and 10 are
-    average absorptions for the two axes (arbitrarily assigned parallel or perpendicular).
-    Column 11 is the temperature the HWP emits at.  There is currently no reflection data so
-    reflectivity is not included at all in the code, though it shouldn't be hard to add should
-    that data be available.'''
+    average absorptions for the two axes (Here the C axis is 'perpendicular' and the L axis is 'parallel').
+    Column 11 is the temperature the HWP emits at.'''
     with open(file) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
+            #skip header(s)
+            if line_count < 2:
+                line_count+=1
             #skip to freq=100
-            if line_count < 92:
-                line_count += 1
-            else:
+            elif int(row[0]) >= 100:
                 a_perp=float(row[3])
                 a_para=float(row[6])
                 r_perp=float(row[2])
@@ -74,18 +76,21 @@ def during_hwp(Tin, file,rflag,aflag):
                 T_emit = float(row[14])
                 T_r = float(row[15])
                 
-                
-                Temp_perp = t_perp*Tin[line_count-92]+a_perp*T_emit+r_perp*T_r
-                Temp_para = t_para*Tin[line_count-92]+a_para*T_emit+r_para*T_r
+                #note we skipped line_count==0 so first temp is at line_count==2
+                Temp_perp = t_perp*Tin[line_count-2]+a_perp*T_emit+r_perp*T_r
+                Temp_para = t_para*Tin[line_count-2]+a_para*T_emit+r_para*T_r
                 
                 Tout_perp.append(Temp_perp)
                 Tout_para.append(Temp_para)
                 
                 line_count+=1
     return(Tout_perp, Tout_para)
+##############################
+####    end during_hwp()  ####
+##############################
 
 #this is the same as the before_hwp function but is made to take in two Temperatures and output two Temperatures
-def after_hwp(Tin_perp, Tin_para, file,rflag,aflag):
+def after_hwp(Tin_perp,Tin_para,file,rflag,aflag):
     Tout_perp=[]
     Tout_para=[]
     
@@ -115,6 +120,10 @@ def after_hwp(Tin_perp, Tin_para, file,rflag,aflag):
                 
                 line_count+=1
     return(Tout_perp, Tout_para)
+#############################
+####    end after_hwp()  ####
+#############################
+
 
 def picowatt_calc(lower_nu, upper_nu, freq, T_A, FWHM):
     k = 1.38e-23
@@ -143,6 +152,9 @@ def picowatt_calc(lower_nu, upper_nu, freq, T_A, FWHM):
     pW = W*10**12
     
     return(pW)
+#################################
+####    end picowatt_calc()  ####
+#################################
 
 def hwp_analysis(file_list,rflag,aflag):  
     
@@ -151,6 +163,8 @@ def hwp_analysis(file_list,rflag,aflag):
         #this if statement checks if the output is a list,  All the files before the HWP should
         #output a list of temperatures, after the HWP the output will be a tuple including
         #a temperature for the parallel axis and a temperature for the perpendicular axis
+
+        #first create the T_eff list to be checked using LMT data
         if 'LMT' in file:
             f = open(file, 'r')
             data = f.readlines()
@@ -162,16 +176,13 @@ def hwp_analysis(file_list,rflag,aflag):
             #if file is not the hwp file, this title can be changed if need be
             if file[:5] != 'model':
                 T_eff = before_hwp(T_eff, file,rflag,aflag)
-                #T_eff_list.append(T_eff[10])
             else:
                 T_eff = during_hwp(T_eff, file,rflag,aflag)
                 T_perp = T_eff[0]
                 T_para = T_eff[1]
-                #T_eff_list.append([T_perp[10], T_para[10]])
         #after the HWP T_eff is a tuple, so the code used needs to calculate twice.
         else:
             T_perp, T_para = after_hwp(T_perp, T_para, file,rflag,aflag)
-            #T_eff_list.append([T_perp[10], T_para[10]])
     
     #create empty lists for the analysis of Temperature data once all the files are looped through
     T_diff = []
@@ -247,6 +258,6 @@ def hwp_analysis(file_list,rflag,aflag):
     #Returned values returned are in decimal form.  So a differential of .1 is 10%, not .1%.
     return([frequency, T_diff, T_avg, differential, delta_t_band_list,t_band_avg_list,
         band_percent_list,picowatt_list])
-    ################################
-    ####    end hwp_analysis()  ####
-    ################################
+################################
+####    end hwp_analysis()  ####
+################################

@@ -1,20 +1,20 @@
 import csv
 import matplotlib.pyplot as plt
-from math import pi
 
 from hwp_func import before_hwp, during_hwp, after_hwp
 from hwp_func import picowatt_calc, hwp_analysis
 
 #include any and all files here IN ORDER!
-#file 0 should be the outermost interface (light from the sky hits this thing first)
-#then from file 0 light goes through file 1, then 2 then 3 etc.
-file_list = ['LMT_annual_25.out','mirrors.csv','warm_optics.csv','model_V1.csv','window.csv','cold_optics_v3.csv', 'detector.csv']
+#file 0 should be the atmosphere, then primary/secondary mirrors, etc...
+file_list = ['LMT_annual_25.out','mirrors.csv','warm_optics.csv','model_V1.csv','window.csv','cold_optics_v3.csv','detector.csv']
 
-# note: [file_list] MUSt be csv files in order from sky to detector.  
-# i.e file_list = ['mirrors.csv','warm_optics.csv','model_V1.csv','window.csv','cold_optics.csv']
-# files except model_V1.csv should have the columns Frequency, Absorption, Reflection, T_reflected, T_absorbed
+# except hwp_model_file, files should have the columns Frequency, Absorption, Reflection, T_reflected, T_absorbed
 # The code assumes the first row in each csv is a header and data begins on line 2
 
+#rflag and aflag tell the function whether to include reflectivities and absorptivities
+#if rflag == 0, then all reflectivity values are considered to be zero, same for aflag
+#if rflag == 1, then reflectivites are taken from optical element csv, same for aflag
+#aflag has the option of aflag == -1, this sets only the hwp absorptivity to zero
 rflag = 1
 aflag = 1
 
@@ -36,10 +36,6 @@ plt.title(r'2$\Omega$ synchronous signal for TolTEC HWP', size='x-large')
 ax1.text(150,10, '150 GHz\nBand', ha='center', size='large')
 ax1.text(220,10, '220 GHz\nBand', ha='center', size='large')
 ax1.text(280,10, '300 GHz\nBand', ha='center', size='large')
-
-#plots lines at +/- 1K
-#plt.axhline(1, c='k', linestyle='dashed')
-#plt.axhline(-1, c='k', linestyle='dashed')
 
 #this section marks off each band blue with vertical lines
 xc = [128,170,195,245,246,310]
