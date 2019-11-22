@@ -1,6 +1,20 @@
 import csv
 import numpy as np
-from math import pi
+from math import pi, exp
+
+
+def antenna_temp(emiss,nu,T):
+    if T == 0:
+        T_ant = 0
+    else:
+        h = 6.626e-34 #m^2.kg/s
+        k = 1.381e-23 #m^2.kg.s^-2.K^-1
+
+        num = h*nu/k
+        den = exp(h*nu/(k*T))-1
+        T_ant = emiss*num/den
+
+    return T_ant
 
 
 #rflag and aflag tell the function whether to include reflectivities and absorptivities
@@ -23,6 +37,7 @@ def before_hwp(Tin,file,rflag,aflag):
             else:
                 #again, assuming correct order of columns.  Indices can be changed, but all files
                 #should be consistent with ordering of columns
+                nu=float(row[0])*1e9 #Hz
                 a=float(row[1])
                 r=float(row[2])
                 if rflag == 0:
@@ -33,7 +48,9 @@ def before_hwp(Tin,file,rflag,aflag):
                 T_a = float(row[4])
                 T_r = float(row[3])
                 
-                Temp = t*Tin[line_count-1]+a*T_a+r*T_r
+                a_T_ant = antenna_temp(a,nu,T_a)
+                r_T_ant = antenna_temp(r,nu,T_r)
+                Temp = t*Tin[line_count-1]+a_T_ant+r_T_ant
                 Tout.append(Temp)
                 
                 line_count+=1
@@ -59,6 +76,7 @@ def during_hwp(Tin,file,rflag,aflag):
                 line_count+=1
             #skip to freq=100
             elif int(row[0]) >= 100:
+                nu = int(row[0])*1e9 #Hz
                 a_perp=float(row[3])
                 a_para=float(row[6])
                 r_perp=float(row[2])
@@ -76,9 +94,13 @@ def during_hwp(Tin,file,rflag,aflag):
                 T_emit = float(row[14])
                 T_r = float(row[15])
                 
+                a_perp_T_ant = antenna_temp(a_perp,nu,T_emit)
+                a_para_T_ant = antenna_temp(a_para,nu,T_emit)
+                r_perp_T_ant = antenna_temp(r_perp,nu,T_r)
+                r_para_T_ant = antenna_temp(r_para,nu,T_r)
                 #note we skipped line_count==0 so first temp is at line_count==2
-                Temp_perp = t_perp*Tin[line_count-2]+a_perp*T_emit+r_perp*T_r
-                Temp_para = t_para*Tin[line_count-2]+a_para*T_emit+r_para*T_r
+                Temp_perp = t_perp*Tin[line_count-2]+a_perp_T_ant+r_perp_T_ant
+                Temp_para = t_para*Tin[line_count-2]+a_para_T_ant+r_para_T_ant
                 
                 Tout_perp.append(Temp_perp)
                 Tout_para.append(Temp_para)
@@ -101,6 +123,7 @@ def after_hwp(Tin_perp,Tin_para,file,rflag,aflag):
             if line_count == 0:
                 line_count += 1
             else:
+                nu = float(row[0])*1e9 #Hz
                 a=float(row[1])
                 r=float(row[2])
                 if rflag == 0:
@@ -112,8 +135,10 @@ def after_hwp(Tin_perp,Tin_para,file,rflag,aflag):
                 T_a = float(row[4])
                 T_r = float(row[3])
                 
-                Temp_perp = t*Tin_perp[line_count-1] + a*T_a + r*T_r
-                Temp_para = t*Tin_para[line_count-1] + a*T_a + r*T_r
+                a_T_ant = antenna_temp(a,nu,T_a)
+                r_T_ant = antenna_temp(r,nu,T_r)
+                Temp_perp = t*Tin_perp[line_count-1]+a_T_ant+r_T_ant
+                Temp_para = t*Tin_para[line_count-1]+a_T_ant+r_T_ant
                 
                 Tout_perp.append(Temp_perp)
                 Tout_para.append(Temp_para)
@@ -150,6 +175,7 @@ def picowatt_calc(lower_nu, upper_nu, freq, T_A, FWHM):
     
     W = (I_num/I_den)*Temp*d_nu*A*Omega
     pW = W*10**12
+    pW = pW/2 #cut in half for polarization detectors
     
     return(pW)
 #################################

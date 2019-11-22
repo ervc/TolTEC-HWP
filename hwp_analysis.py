@@ -81,4 +81,6 @@ plt.ylabel('Average\nTemperature (K)')
 plt.xlim(100,320)
 plt.grid(b=True)
 
+plt.savefig('outplot.png')
+
 plt.show()
