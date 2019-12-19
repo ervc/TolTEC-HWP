@@ -14,4 +14,4 @@ $ python hwp_check.py [name of hwp file]
 
 This code checks all of the assumptions listed in table 4 of the included paper (Modelling the 2-omega Synchronous Signal for the TolTEC Imaging Polarimeter.pdf). The output is a histogram (fig 5) and a modified version of fig 4 to include curves for each set of assumptions.
 
-The Delta T threshold for each band can be adjusted in the hwp_check.py file on lines 14, 15, and 16 for the low, medium, and high bands respectively. In the output histogram.
+The Delta T threshold for each band can be adjusted in the hwp_check.py file on lines 14, 15, and 16 for the low, medium, and high bands respectively.
