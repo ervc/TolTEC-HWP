@@ -182,7 +182,7 @@ def picowatt_calc(lower_nu, upper_nu, freq, T_A, FWHM):
 ####    end picowatt_calc()  ####
 #################################
 
-def hwp_analysis(file_list,rflag,aflag):  
+def hwp_analysis(file_list,hwp_file,rflag,aflag):  
     
     #loop through each file
     for file in file_list:
@@ -199,8 +199,8 @@ def hwp_analysis(file_list,rflag,aflag):
                 elements=line.split()
                 T_eff.append(float(elements[3]))
         elif type(T_eff) == list:
-            #if file is not the hwp file, this title can be changed if need be
-            if file[:5] != 'model':
+            #if file is not the hwp file
+            if file != hwp_file:
                 T_eff = before_hwp(T_eff, file,rflag,aflag)
             else:
                 T_eff = during_hwp(T_eff, file,rflag,aflag)
