@@ -9,8 +9,10 @@ Frequency, Transmittance C, Reflection C, Absorption C, Transmittance L, Reflect
 Functions to calculate the effective temperature through each optical element are contained in hwp_func.py
 
 
-To do the calculation run 
+To do the calculation run
+
 $ python hwp_check.py [name of hwp file]
+
 
 This code checks all of the assumptions listed in table 4 of the included paper (Modelling the 2-omega Synchronous Signal for the TolTEC Imaging Polarimeter.pdf). The output is a histogram (fig 5) and a modified version of fig 4 to include curves for each set of assumptions.
 
