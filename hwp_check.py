@@ -10,7 +10,7 @@ from hwp_func import hwp_analysis, picowatt_calc
 
 ##################################################
 
-#Temperature 
+#Delta T temperature thresholds for the three bands in Kelvin
 lowband_threshold = 1
 medband_threshold = 0.8
 highband_threshold = 0.5
@@ -41,7 +41,7 @@ outplot = 'all_hwp_outplot.png'
 outhist = 'all_delta_t_histograms.png'
 for filename in [outfile,failfile,outplot,outhist]:
 	if os.path.exists(filename):
-		print(filename+' already exists, removing it')
+		print(filename+' already exists, removing it to create new file')
 		os.remove(filename)
 	else:
 		print(filename+' does not already exist')
@@ -60,111 +60,91 @@ with open(outfile,'a') as csvfile:
 	file = csv.writer(csvfile,delimiter=',')
 	file.writerow(['Band','Frequency','Delta_T band','T_band avg','Percent Difference','Picowatt Loading'])
 
-print('working through files...')
-plt.figure(1, figsize=(10,9))
+print('Looping through assumptions...')
+fig, (ax1,ax2,ax3) = plt.subplots(3,1, figsize=(10,9))
+
+ax1.text(150,10, '150 GHz\nBand', ha='center', size='large')
+ax1.text(220,10, '220 GHz\nBand', ha='center', size='large')
+ax1.text(280,10, '300 GHz\nBand', ha='center', size='large')
+
+ax2.text(150,-0.35, '150 GHz\nBand', ha='center', size='large')
+ax2.text(220,-0.35, '220 GHz\nBand', ha='center', size='large')
+ax2.text(280,-0.35, '300 GHz\nBand', ha='center', size='large')
+
+ax3.text(150,49, '150 GHz\nBand', ha='center', size='large')
+ax3.text(220,49, '220 GHz\nBand', ha='center', size='large')
+ax3.text(280,49, '300 GHz\nBand', ha='center', size='large')
+
+xc = [128,170,195,245,246,310]
+for i in range(len(xc)):
+	ax1.axvline(x=xc[i], color='0.25', linestyle='dashed')
+	ax2.axvline(x=xc[i], color='0.25', linestyle='dashed')
+	ax3.axvline(x=xc[i], color='0.25', linestyle='dashed')
+
 
 for atm_file in atm_files:
-	print('working...')
 	for co_file in co_files:
 		for det_file in detect_files:
-			filelist = [atm_file,'mirrors.csv','warm_optics.csv',hwp_file,'window.csv',co_file,det_file]
-			filelist2 = [directory+f if f != hwp_file else f for f in filelist]
+			for hwp_temp in [25, 45, 65]:
+				filelist = [atm_file,'mirrors.csv','warm_optics.csv',hwp_file,'window.csv',co_file,det_file]
+				filelist2 = [directory+f if f != hwp_file else f for f in filelist]
 
-			freq,td,ta,dif,dtb,tba,bpl,pwl = hwp_analysis(filelist2,hwp_file,rflag,aflag)
+				freq,td,ta,dif,dtb,tba,bpl,pwl = hwp_analysis(filelist2,hwp_file,hwp_temp,rflag,aflag)
 
-			with open(outfile,'a') as csvfile:
-				writefile = csv.writer(csvfile, delimiter=',')
-				writefile.writerow(filelist)
-				writefile.writerow(['Low','128-170',dtb[0],tba[0],bpl[0],pwl[0]])
-				writefile.writerow(['Medium','195-245',dtb[1],tba[1],bpl[1],pwl[1]])
-				writefile.writerow(['High','245-310',dtb[2],tba[2],bpl[2],pwl[2]])
-			with open(failfile,'a') as csvfail:
-				fail_writer = csv.writer(csvfail,delimiter=',')
-				if dtb[0]<(0-lowband_threshold) or dtb[0]>lowband_threshold:
-					fail_writer.writerow(filelist)
-					fail_writer.writerow(['Low','128-170',dtb[0],tba[0],bpl[0],pwl[0]])
-				if dtb[1]<(0-medband_threshold) or dtb[1]>medband_threshold:
-					fail_writer.writerow(filelist)
-					fail_writer.writerow(['Medium','195-245',dtb[1],tba[1],bpl[1],pwl[1]])
-				if dtb[2]<(0-highband_threshold) or dtb[2]>highband_threshold:
-					fail_writer.writerow(filelist)
-					fail_writer.writerow(['High','245-310',dtb[2],tba[2],bpl[2],pwl[2]])
-
-
-
-			################################
-			####    PLOTS BEGIN HERE    ####
-			################################
-			#begin plots
+				with open(outfile,'a') as csvfile:
+					writefile = csv.writer(csvfile, delimiter=',')
+					writefile.writerow(filelist)
+					writefile.writerow(['Low','128-170',dtb[0],tba[0],bpl[0],pwl[0]])
+					writefile.writerow(['Medium','195-245',dtb[1],tba[1],bpl[1],pwl[1]])
+					writefile.writerow(['High','245-310',dtb[2],tba[2],bpl[2],pwl[2]])
+				with open(failfile,'a') as csvfail:
+					fail_writer = csv.writer(csvfail,delimiter=',')
+					if dtb[0]<(0-lowband_threshold) or dtb[0]>lowband_threshold:
+						fail_writer.writerow(filelist)
+						fail_writer.writerow(['Low','128-170',dtb[0],tba[0],bpl[0],pwl[0]])
+					if dtb[1]<(0-medband_threshold) or dtb[1]>medband_threshold:
+						fail_writer.writerow(filelist)
+						fail_writer.writerow(['Medium','195-245',dtb[1],tba[1],bpl[1],pwl[1]])
+					if dtb[2]<(0-highband_threshold) or dtb[2]>highband_threshold:
+						fail_writer.writerow(filelist)
+						fail_writer.writerow(['High','245-310',dtb[2],tba[2],bpl[2],pwl[2]])
 
 
 
-			#temperature difference subplot    
-			ax1 = plt.subplot(311)
-			plt.plot(freq, td)
+				################################
+				####    PLOTS BEGIN HERE    ####
+				################################
+				#begin plots
 
-			plt.title('All possible variations', size='x-large')
+				#temperature difference subplot    
+				
+				ax1.plot(freq, td)
 
-			ax1.text(150,10, '150 GHz\nBand', ha='center', size='large')
-			ax1.text(220,10, '220 GHz\nBand', ha='center', size='large')
-			ax1.text(280,10, '300 GHz\nBand', ha='center', size='large')
+				ax1.set_title('All possible variations', size='x-large')
 
-			#plots lines at +/- 1K
-			#plt.axhline(1, c='k', linestyle='dashed')
-			#plt.axhline(-1, c='k', linestyle='dashed')
-
-			#this section marks off each band blue with vertical lines
-			xc = [128,170,195,245,246,310]
-			for i in range(len(xc)):
-				plt.axvline(x=xc[i], color='0.25', linestyle='dashed')
-					
-			plt.ylabel('Temperature\ndifference (K)')
-			plt.setp(ax1.get_xticklabels(), visible=False)
-			plt.xlim(100,320)
-			plt.grid(b=True)
+				ax1.set_ylabel('Temperature\ndifference (K)')
+				plt.setp(ax1.get_xticklabels(), visible=False)
+				ax1.set_xlim(100,320)
+				ax1.grid(b=True)
 
 
-			#percent difference subplot
-			ax2 = plt.subplot(312)
-			plt.plot(freq, dif)
+				#percent difference subplot
+				ax2.plot(freq, dif)
 
-			ax2.text(150,-0.35, '150 GHz\nBand', ha='center', size='large')
-			ax2.text(220,-0.35, '220 GHz\nBand', ha='center', size='large')
-			ax2.text(280,-0.35, '300 GHz\nBand', ha='center', size='large')
-
-			for i in range(len(xc)):
-				plt.axvline(x=xc[i], color='0.25', linestyle='dashed')
-
-			plt.ylabel('Fractional\ndifference')
-			plt.setp(ax2.get_xticklabels(), visible=False)
-			plt.xlim(100,320)
-			plt.grid(b=True)
+				ax2.set_ylabel('Fractional\ndifference')
+				plt.setp(ax2.get_xticklabels(), visible=False)
+				ax2.set_xlim(100,320)
+				ax2.grid(b=True)
 
 
-			#average temperature subplot
-			ax3=plt.subplot(313)
-			plt.plot(freq, ta)
+				#average temperature subplot
+				ax3.plot(freq, ta)
+						
+				ax3.set_xlabel('Fequency (GHz)')
+				ax3.set_ylabel('Average\nTemperature (K)')
+				ax3.set_xlim(100,320)
+				plt.grid(b=True)
 
-			ax3.text(150,49, '150 GHz\nBand', ha='center', size='large')
-			ax3.text(220,49, '220 GHz\nBand', ha='center', size='large')
-			ax3.text(280,49, '300 GHz\nBand', ha='center', size='large')
-
-			for i in range(len(xc)):
-				plt.axvline(x=xc[i], color='0.25', linestyle='dashed')
-					
-			plt.xlabel('Fequency (GHz)')
-			plt.ylabel('Average\nTemperature (K)')
-			plt.xlim(100,320)
-			plt.grid(b=True)
-###plt.text(0.5, -0.3, 
-#    '2$\Omega$ synchronous signals for TolTEC\nas calculated by our code', 
-#    horizontalalignment='center', verticalalignment='center', 
-#    transform=ax3.transAxes, fontsize='24')
-
-#plt.tight_layout()
-
-#plt.draw()
-print('done!')
 print(outplot+' is done')
 #optional savefig line
 plt.savefig(outplot)
@@ -209,12 +189,11 @@ n_max=100 #set n_max at least 100 (purely for graphing)
 for band in delta_T:
 	print('working on %s band' % (band))
 	n,bins,patches = plt.hist(delta_T[band][1:],bins,color=delta_T[band][0],alpha=0.25,label=band)
-	print('For band %s n is ' % (band))
+	print('For %s band, n is ' % (band))
 	print(n)
 	plt.hist(delta_T[band][1:],bins,color=delta_T[band][0],histtype='step',fill=False)
 	if max(n) > n_max:
 		n_max = max(n)
-	print('%s band worked!' % (band))
 plt.legend()
 if dt_min > -3:
 	plt.xlim(left=-3)
@@ -234,3 +213,4 @@ plt.title('Temperature difference for\nall hwp assumptions')
 
 plt.savefig(outhist)
 plt.show()
+print('\nDONE: outputs are saved to {0}, {1}'.format(outplot, outhist))

@@ -8,6 +8,10 @@ Frequency, Transmittance C, Reflection C, Absorption C, Transmittance L, Reflect
 
 Functions to calculate the effective temperature through each optical element are contained in hwp_func.py
 
-To do the calculation run hwp_analysis.py.  As it is set up by default, the program should output Figure 4 from the synchronous signal paper.  The program will also create two output csv files, one containing the effective temp at each wavelength, and another containing band average effective temperatures, average temperatures, fractional differences, and picowatt loading.
 
-In hwp_analysis.py the file_list on line 9 can be changed to adjust optical properties for each file individually.
+To do the calculation run 
+$ python hwp_check.py [name of hwp file]
+
+This code checks all of the assumptions listed in table 4 of the included paper (Modelling the 2-omega Synchronous Signal for the TolTEC Imaging Polarimeter.pdf). The output is a histogram (fig 5) and a modified version of fig 4 to include curves for each set of assumptions.
+
+The Delta T threshold for each band can be adjusted in the hwp_check.py file on lines 14, 15, and 16 for the low, medium, and high bands respectively. In the output histogram.

@@ -59,7 +59,7 @@ def before_hwp(Tin,file,rflag,aflag):
 ####    end before_hwp()  ####
 ##############################
 
-def during_hwp(Tin,file,rflag,aflag):
+def during_hwp(Tin,file,hwp_temp,rflag,aflag):
     Tout_perp=[]
     Tout_para=[]
     
@@ -92,7 +92,7 @@ def during_hwp(Tin,file,rflag,aflag):
                 t_perp=1-a_perp-r_perp
                 t_para=1-a_para-r_para
                 T_emit = float(row[14])
-                T_r = float(row[15])
+                T_r = hwp_temp
                 
                 a_perp_T_ant = antenna_temp(a_perp,nu,T_emit)
                 a_para_T_ant = antenna_temp(a_para,nu,T_emit)
@@ -182,7 +182,7 @@ def picowatt_calc(lower_nu, upper_nu, freq, T_A, FWHM):
 ####    end picowatt_calc()  ####
 #################################
 
-def hwp_analysis(file_list,hwp_file,rflag,aflag):  
+def hwp_analysis(file_list,hwp_file,hwp_temp,rflag,aflag):  
     
     #loop through each file
     for file in file_list:
@@ -203,7 +203,7 @@ def hwp_analysis(file_list,hwp_file,rflag,aflag):
             if file != hwp_file:
                 T_eff = before_hwp(T_eff, file,rflag,aflag)
             else:
-                T_eff = during_hwp(T_eff, file,rflag,aflag)
+                T_eff = during_hwp(T_eff, file,hwp_temp,rflag,aflag)
                 T_perp = T_eff[0]
                 T_para = T_eff[1]
         #after the HWP T_eff is a tuple, so the code used needs to calculate twice.
