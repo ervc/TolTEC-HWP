@@ -212,5 +212,4 @@ plt.axvline(x=(0-highband_threshold),color=delta_T['High'][0])
 plt.title('Temperature difference for\nall hwp assumptions')
 
 plt.savefig(outhist)
-plt.show()
 print('\nDONE: outputs are saved to {0}, {1}'.format(outplot, outhist))
