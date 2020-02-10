@@ -10,10 +10,15 @@ from hwp_func import hwp_analysis, picowatt_calc
 
 ##################################################
 
-#Delta T temperature thresholds for the three bands in Kelvin
-lowband_threshold = 1
-medband_threshold = 0.8
-highband_threshold = 0.5
+#Delta T temperature 10% thresholds for the three bands in Kelvin
+lowband_threshold = 1.1
+medband_threshold = 1.1
+highband_threshold = 1.2
+
+#Delta T temperature root-two noise penalty for the three bands in Kelvin
+lowband_roottwo = 1.9
+medband_roottwo = 1.8
+highband_roottwo = 2.1
 
 ##################################################
 
@@ -80,7 +85,6 @@ for i in range(len(xc)):
 	ax1.axvline(x=xc[i], color='0.25', linestyle='dashed')
 	ax2.axvline(x=xc[i], color='0.25', linestyle='dashed')
 	ax3.axvline(x=xc[i], color='0.25', linestyle='dashed')
-
 
 for atm_file in atm_files:
 	for co_file in co_files:
@@ -191,6 +195,7 @@ for band in delta_T:
 	n,bins,patches = plt.hist(delta_T[band][1:],bins,color=delta_T[band][0],alpha=0.25,label=band)
 	print('For %s band, n is ' % (band))
 	print(n)
+	print()
 	plt.hist(delta_T[band][1:],bins,color=delta_T[band][0],histtype='step',fill=False)
 	if max(n) > n_max:
 		n_max = max(n)
@@ -204,12 +209,22 @@ plt.ylabel('N',rotation=0)
 
 plt.axvline(x=lowband_threshold,color=delta_T['Low'][0])
 plt.axvline(x=(0-lowband_threshold),color=delta_T['Low'][0])
+plt.axvline(x=lowband_roottwo,linestyle='--',color=delta_T['Low'][0])
+plt.axvline(x=(0-lowband_roottwo),ls='--',color=delta_T['Low'][0])
 plt.axvline(x=medband_threshold,color=delta_T['Medium'][0])
 plt.axvline(x=(0-medband_threshold),color=delta_T['Medium'][0])
+plt.axvline(x=medband_roottwo,ls='--',color=delta_T['Medium'][0])
+plt.axvline(x=(0-medband_roottwo),ls='--',color=delta_T['Medium'][0])
 plt.axvline(x=highband_threshold,color=delta_T['High'][0])
 plt.axvline(x=(0-highband_threshold),color=delta_T['High'][0])
+plt.axvline(x=highband_roottwo,ls='--',color=delta_T['High'][0])
+plt.axvline(x=(0-highband_roottwo),ls='--',color=delta_T['High'][0])
 
 plt.title('Temperature difference for\nall hwp assumptions')
 
 plt.savefig(outhist)
+
+for band in delta_T:
+	print('{0} frequency band average delta temp: {1:.4f} K'.format(band,np.average(delta_T[band][1:])))
+
 print('\nDONE: outputs are saved to {0}, {1}'.format(outplot, outhist))
