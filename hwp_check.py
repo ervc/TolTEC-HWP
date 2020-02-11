@@ -11,8 +11,8 @@ from hwp_func import hwp_analysis, picowatt_calc
 ##################################################
 
 #Delta T temperature 10% thresholds for the three bands in Kelvin
-lowband_threshold = 1.1
-medband_threshold = 1.1
+lowband_threshold = 1.08 #moved slightly for visibility
+medband_threshold = 1.12 #moved slightly for visibility
 highband_threshold = 1.2
 
 #Delta T temperature root-two noise penalty for the three bands in Kelvin
@@ -225,6 +225,6 @@ plt.title('Temperature difference for\nall hwp assumptions')
 plt.savefig(outhist)
 
 for band in delta_T:
-	print('{0} frequency band average delta temp: {1:.4f} K'.format(band,np.average(delta_T[band][1:])))
+	print('{0} frequency band average delta temp: {1:.4f} K'.format(band,np.average([abs(t) for t in delta_T[band][1:]])))
 
 print('\nDONE: outputs are saved to {0}, {1}'.format(outplot, outhist))
